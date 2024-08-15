@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Leaflet Map with Google Sheets Data</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
@@ -14,7 +15,10 @@
       height: 100%;
       width: 100vw;
     }
-  </style>
+  .leaflet-control-attribution {
+    display: none;
+  }
+</style>
 </head>
 <body>
   <div id="map"></div>
@@ -22,8 +26,10 @@
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
   <script>
-    // Initialize the map
-    const map = L.map('map').setView([17.4065, 78.4772], 10); // Centered on hyderabad
+// Initialize the map
+const map = L.map('map', {
+  attributionControl: false // Disable the default attribution control
+}).setView([17.4065, 78.4772], 10); // Centered on Hyderabad
 
     // Add a tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -80,6 +86,81 @@
     }
 
     map.on('locationerror', onLocationError);
-  </script>
+    
+    
+// Define start and end points
+var start = L.latLng(17.385044, 78.486671);
+var end = L.latLng(17.387450, 78.491684); // Example end point
+
+// Add routing control
+var routingControl = L.Routing.control({
+    waypoints: [start, end],
+    routeWhileDragging: true,
+    geocoder: L.Control.Geocoder.nominatim()
+}).addTo(map);
+
+// Add custom markers for start and finish
+L.marker(start).addTo(map)
+    .bindPopup('Start')
+    .openPopup();
+
+L.marker(end).addTo(map)
+    .bindPopup('Finish')
+    .openPopup();
+    
+    
+        // Add "My Location" button
+    L.Control.myLocation = L.Control.extend({
+      options: {
+        position: 'topright',
+        title: 'Show My Location'
+      },
+      onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.title = this.options.title;
+        container.style.backgroundColor = 'white';
+        container.style.width = '30px';
+        container.style.height = '30px';
+        container.style.lineHeight = '30px';
+        container.style.textAlign = 'center';
+        container.style.fontSize = '18px';
+        container.style.cursor = 'pointer';
+        container.innerHTML = '🔍'; // Icon for the button
+
+        container.onclick = function () {
+          map.locate({setView: true, maxZoom: 16});
+        };
+
+        return container;
+      }
+    });
+
+    L.control.myLocation = function (opts) {
+      return new L.Control.myLocation(opts);
+    };
+
+    L.control.myLocation().addTo(map);
+    
+    //creating a mark or pin to map 
+    
+    var marker = null; // To keep track of the marker
+
+// Add click event to the map
+map.on('click', function(e) {
+    if (marker) {
+        map.removeLayer(marker); // Remove existing marker if any
+    }
+
+// Add a new marker at the clicked position
+    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+
+    // Add a popup to the marker with latitude, longitude, and an iframe
+      marker.bindPopup(
+        'Latitude: ' + e.latlng.lat.toFixed(6) + '<br>Longitude: ' + e.latlng.lng.toFixed(6) +
+        '<br><iframe class="popup-iframe" src="https://forms.gle/rsgXYM3dekAwTVCX6" frameborder="0" width="300" height="200"></iframe>'
+      );
+    });
+    
+      </script>
 </body>
 </html>
