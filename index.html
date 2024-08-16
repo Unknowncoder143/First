@@ -18,6 +18,17 @@
   .leaflet-control-attribution {
     display: none;
   }
+    .leaflet-control-reload {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 6px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .leaflet-control-reload:hover {
+            background-color: #f0f0f0;
+        }
 </style>
 </head>
 <body>
@@ -87,27 +98,19 @@ const map = L.map('map', {
 
     map.on('locationerror', onLocationError);
     
-    
-// Define start and end points
-var start = L.latLng(17.385044, 78.486671);
-var end = L.latLng(17.387450, 78.491684); // Example end point
 
 // Add routing control
 var routingControl = L.Routing.control({
-    waypoints: [start, end],
+    waypoints: [
+      L.latLng(17.3850, 78.4867) ,
+            L.latLng(17.3850, 78.4867) // Destination example (Hyderabad) 
+        ],
     routeWhileDragging: true,
+    geocoder: L.Control.Geocoder.nominatim(),
     geocoder: L.Control.Geocoder.nominatim()
 }).addTo(map);
 
-// Add custom markers for start and finish
-L.marker(start).addTo(map)
-    .bindPopup('Start')
-    .openPopup();
-
-L.marker(end).addTo(map)
-    .bindPopup('Finish')
-    .openPopup();
-    
+// Add custom markers for start and finish with draggable option
     
         // Add "My Location" button
     L.Control.myLocation = L.Control.extend({
@@ -160,6 +163,30 @@ map.on('click', function(e) {
         '<br><iframe class="popup-iframe" src="https://forms.gle/rsgXYM3dekAwTVCX6" frameborder="0" width="300" height="200"></iframe>'
       );
     });
+    
+    // Define the custom control
+        L.Control.Reload = L.Control.extend({
+            options: {
+                position: 'bottomleft'
+            },
+
+            onAdd: function (map) {
+                var controlDiv = L.DomUtil.create('div', 'leaflet-control-reload');
+                controlDiv.innerHTML = 'Reload ';
+
+                L.DomEvent.on(controlDiv, 'click', function () {
+                    location.reload();
+                });
+
+                return controlDiv;
+            }
+        });
+
+        // Add the custom control to the map
+        L.control.reload = function (opts) {
+            return new L.Control.Reload(opts);
+        };
+        L.control.reload({ position: 'bottomleft' }).addTo(map);
     
       </script>
 </body>
