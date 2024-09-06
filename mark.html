@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map with Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100vw;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script>
+        // Initialize the map and set the view
+        var map = L.map('map').setView([17.385044, 78.486671], 12);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+        }).addTo(map);
+
+        var currentMarker = null; // Track the current marker
+
+        // Initialize geocoder
+        var geocoder = L.Control.geocoder({
+            defaultMarkGeocode: true
+        }).addTo(map);
+
+        // Handle geocoding results
+        geocoder.on('markgeocode', function(e) {
+            var latlng = e.geocode.center;
+            console.log(e.geocode); // Log result for debugging
+
+            // Remove previous marker if exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+
+            // Add new marker
+            currentMarker = L.marker(latlng, {draggable: true}).addTo(map)
+                .bindPopup(`Latitude: ${latlng.lat.toFixed(5)}, Longitude: ${latlng.lng.toFixed(5)}`)
+                .openPopup();
+
+            // Update popup content on marker drag
+            currentMarker.on('dragend', function(event) {
+                var position = event.target.getLatLng();
+                currentMarker.setPopupContent(`Latitude: ${position.lat.toFixed(5)}, Longitude: ${position.lng.toFixed(5)}`);
+            });
+
+            // Center map on the result
+            map.setView(latlng, 16);
+        });
+
+        // Add current location marker
+        map.locate({setView: true, maxZoom: 16});
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+
+            // Remove previous marker if exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+
+            // Add marker for current location
+            currentMarker = L.marker(e.latlng, {draggable: true}).addTo(map)
+                .bindPopup(`You are within ${radius} meters from this point`)
+                .openPopup();
+
+            // Update popup content on marker drag
+            currentMarker.on('dragend', function(event) {
+                var position = event.target.getLatLng();
+                currentMarker.setPopupContent(`Latitude: ${position.lat.toFixed(5)}, Longitude: ${position.lng.toFixed(5)}`);
+            });
+        }
+        map.on('locationfound', onLocationFound);
+
+        function onLocationError(e) {
+            alert(`Location error: ${e.message}`);
+        }
+        map.on('locationerror', onLocationError);
+
+        // Add draggable marker on map click
+        map.on('click', function(e) {
+            var latlng = e.latlng;
+
+            // Remove previous marker if exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+
+            // Add new marker
+            currentMarker = L.marker(latlng, {draggable: true}).addTo(map)
+                .bindPopup(`Latitude: ${latlng.lat.toFixed(5)}, Longitude: ${latlng.lng.toFixed(5)}`)
+                .openPopup();
+
+            // Update popup content on marker drag
+            currentMarker.on('dragend', function(event) {
+                var position = event.target.getLatLng();
+                currentMarker.setPopupContent(`Latitude: ${position.lat.toFixed(5)}, Longitude: ${position.lng.toFixed(5)}`);
+            });
+        });
+        
+        
+        // creating mark or pin to map 
+        
+        var marker = null; // To keep track of the marker
+
+// Add click event to the map
+map.on('click', function(e) {
+    if (marker) {
+        map.removeLayer(marker); // Remove existing marker if any
+    }
+
+    // Add a new marker at the clicked position
+    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+
+    // Optional: Add a popup to the marker
+    marker.bindPopup('Latitude: ' + e.latlng.lat.toFixed(6) + '<br>Longitude: ' + e.latlng.lng.toFixed(6)'
+       '<iframe class="popup-iframe" src="https://forms.gle/rsgXYM3dekAwTVCX6" frameborder="0"></iframe>'
+    ).openPopup();
+});
+    </script>
+</body>
+</html>
