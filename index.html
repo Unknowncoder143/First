@@ -83,7 +83,7 @@ const map = L.map('map', {
     var geocoder = L.Control.geocoder().addTo(map);
 
     // Adding current location
-    map.locate({ setview: false , watch: false, maxview: 16,timeout: 5000});
+    map.locate({ setview: false , watch: false, maxview: 16});
 
     // functions
     function onLocationFound(e) {
