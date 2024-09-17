@@ -1,4 +1,3 @@
-// Fetch the JSON data from Google Sheets
 fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7F_kfM1nfkc/gviz/tq?tqx=out:json')
   .then(response => response.text())
   .then(text => {
@@ -20,7 +19,7 @@ fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7
           <div class="popup-content">
             <h4>${title}</h4>
             <p>${description}</p>
-            ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100px;">` : ''}
+            <p><strong>Category:</strong> ${categories}</p>
             <p><strong>Timestamp:</strong> ${timestamp}</p>
           </div>
         `;
@@ -29,3 +28,4 @@ fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7
     });
   })
   .catch(error => console.error('Error fetching data:', error));
+      
