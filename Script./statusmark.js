@@ -1,16 +1,5 @@
-// Define custom icons
-const customIcon1 = L.icon({
-  iconUrl: 'path_to_icon1.png',
-  iconSize: [32, 32], // size of the icon
-});
-
-const customIcon2 = L.icon({
-  iconUrl: 'path_to_icon2.png',
-  iconSize: [32, 32],
-});
-
 // Fetch the JSON data from Google Sheets
-fetch('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYlsWaIX640YGQ/gviz/tq?tqx=out:json')
+fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7F_kfM1nfkc/gviz/tq?tqx=out:json')
   .then(response => response.text())
   .then(text => {
     // Parse the JSON data
@@ -19,33 +8,23 @@ fetch('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYls
 
     // Loop through the rows and add markers
     rows.forEach(row => {
-      const timestamp = row.c[0] ? row.c[0].v : ''; // Adjust index for Timestamp
-      const title = row.c[4] ? row.c[4].v : '';     // Adjust index for Title
-      const description = row.c[5] ? row.c[5].v : ''; // Adjust index for Description
-      const lat = parseFloat(row.c[3].v);           // Adjust index for Latitude
-      const lng = parseFloat(row.c[4].v);           // Adjust index for Longitude
-      const iconType = row.c[8] ? row.c[8].v : '';  // Adjust index for Icon Type (e.g., 'icon1', 'icon2')
+      const timestamp = row.c[0] ? row.c[0].v : ''; // Timestamp
+      const title = row.c[5] ? row.c[5].v : ''; // Title
+      const description = row.c[6] ? row.c[6].v : ''; // Description
+      const lat = parseFloat(row.c[2].v); // Latitude
+      const lng = parseFloat(row.c[3].v); // Longitude
+      const categories = row.c[8]? row.c[8].v : '';// categories
 
-      // Check if latitude and longitude are valid
       if (!isNaN(lat) && !isNaN(lng)) {
         const popupContent = `
           <div class="popup-content">
             <h4>${title}</h4>
             <p>${description}</p>
+            ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100px;">` : ''}
             <p><strong>Timestamp:</strong> ${timestamp}</p>
           </div>
         `;
-
-        // Set the marker icon based on the iconType from the sheet
-        let icon = customIcon1; // Default icon
-        if (iconType === 'icon2') {
-          icon = customIcon2;
-        }
-
-        // Add marker to the map
-        L.marker([lat, lng], { icon: icon })
-          .addTo(map)
-          .bindPopup(popupContent);
+        L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
       }
     });
   })
