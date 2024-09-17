@@ -20,11 +20,11 @@ fetch('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYls
     // Loop through the rows and add markers
     rows.forEach(row => {
       const timestamp = row.c[0] ? row.c[0].v : ''; // Adjust index for Timestamp
-      const title = row.c[1] ? row.c[1].v : '';     // Adjust index for Title
-      const description = row.c[2] ? row.c[2].v : ''; // Adjust index for Description
+      const title = row.c[4] ? row.c[4].v : '';     // Adjust index for Title
+      const description = row.c[5] ? row.c[5].v : ''; // Adjust index for Description
       const lat = parseFloat(row.c[3].v);           // Adjust index for Latitude
       const lng = parseFloat(row.c[4].v);           // Adjust index for Longitude
-      const iconType = row.c[5] ? row.c[5].v : '';  // Adjust index for Icon Type (e.g., 'icon1', 'icon2')
+      const iconType = row.c[8] ? row.c[8].v : '';  // Adjust index for Icon Type (e.g., 'icon1', 'icon2')
 
       // Check if latitude and longitude are valid
       if (!isNaN(lat) && !isNaN(lng)) {
