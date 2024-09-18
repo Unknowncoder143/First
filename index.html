@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,9 +7,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-<!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  
   <style>
     body {
       padding: 0;
@@ -35,17 +35,11 @@
 </style>
 </head>
 <body>
-  <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+ 
   <script>
 // Initialize the map
 const map = L.map('map', {
@@ -57,7 +51,10 @@ const map = L.map('map', {
       attribution: 'rishi ralla'
     }).addTo(map);
 
-    // Fetch the JSON data from Google Sheets
+
+
+
+       // Fetch the JSON data from Google Sheets
     fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7F_kfM1nfkc/gviz/tq?tqx=out:json')
       .then(response => response.text())
       .then(text => {
@@ -88,29 +85,49 @@ const map = L.map('map', {
         });
       })
       .catch(error => console.error('Error fetching data:', error));
+
+
+    // Fetch the JSON data from Google Sheets adding status mark 
+fetch('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYlsWaIX640YGQ/gviz/tq?tqx=out:json')
+  .then(response => response.text())
+  .then(text => {
+    try {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      rows.forEach(row => {
+        const lat = parseFloat(row.c[2]?.v);
+        const lng = parseFloat(row.c[3]?.v);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const popupContent = `
+            <div class="popup-content">
+              <h4>${row.c[4]?.v}</h4>
+              <p>${row.c[5]?.v}</p>
+              <p><strong>Category:</strong> ${row.c[8]?.v}</p>
+              <p><strong>Date:</strong> ${new Date(row.c[0]?.v).toLocaleDateString()}</p>
+              <p><strong>Time:</strong> ${new Date(row.c[0]?.v).toLocaleTimeString()}</p>
+              ${row.c[9]?.v ? `<p><a href="${row.c[9].v}" target="_blank">More Info</a></p>` : ''}
+            </div>
+          `;
+          L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
+        }
+      });
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
       
     // Adding search geocoding
     var geocoder = L.Control.geocoder().addTo(map);
 
     // Adding current location
-    map.locate({setView: true, maxZoom: 16});
-    function onLocationFound(e) {
-      var radius = e.accuracy;
-      L.marker(e.latlng).addTo(map)
-        .bindPopup("You are within " + radius + " meters from this point").openPopup();
-    }
+    map.locate({ setview: false , watch: false, maxview: 16});
 
-    map.on('locationfound', onLocationFound);
-
-    function onLocationError(e) {
-      alert(e.message);
-    }
-
-    map.on('locationerror', onLocationError);
-
-
-
-        // functions on my current location 
+    // functions on my current location 
     
     function onLocationFound(e) {
   var radius = e.accuracy;
@@ -158,9 +175,15 @@ const map = L.map('map', {
 
   L.marker(e.latlng).addTo(map)
     .bindPopup(popupMylocation).openPopup();
-    }
-    
+}
 
+map.on('locationfound', onLocationFound);
+
+function onLocationError(e) {
+  alert(e.message);
+}
+
+map.on('locationerror', onLocationError);
 // Add routing control
 var routingControl = L.Routing.control({
     waypoints: [
@@ -252,4 +275,4 @@ map.on('click', function(e) {
     
       </script>
 </body>
-</Html>
+</html>
