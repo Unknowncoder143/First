@@ -97,6 +97,58 @@ const map = L.map('map', {
     }
 
     map.on('locationerror', onLocationError);
+
+
+
+        // functions on my current location 
+    
+    function onLocationFound(e) {
+  var radius = e.accuracy;
+  
+  const popupMylocation = `
+    <div class="popup-mylocation">
+      <div>
+        <form action="https://docs.google.com/forms/d/e/1FAIpQLSc-eI8W0yABluXJaxh1eOutqoq-IMPozUsf8LXCcfA4kCE3sg/formResponse" method="POST">
+          <!-- Hidden fields for latitude and longitude -->
+          <input type="hidden" id="lat" name="entry.762797833" value="${e.latlng.lat}">
+          <input type="hidden" id="long" name="entry.1749073491" value="${e.latlng.lng}">
+
+          <div>
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="entry.1822183594" placeholder="Enter Title" required>
+          </div>
+          <div>
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="entry.1462572732" placeholder="Enter Description" required></textarea>
+          </div>
+          <div>
+            <label for="category">Category</label>
+            <select class="form-control" id="category" name="entry.2123662913" required>
+              <option value="">Select Category</option>
+              <option value="Feeds">Feeds</option>
+              <option value="Explore">Explore</option>
+              <option value="Party">Party</option>
+              <option value="Show">Show</option>
+              <option value="Sports">Sports</option>
+              <option value="Sales">Sales</option>
+              <option value="Job">Job</option>
+              <option value="Parade">Parade</option>
+            </select>
+          </div>
+          
+
+          <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+      </div>
+      <div>
+        <p>You are within ${radius} meters from this point.</p>
+      </div>
+    </div>
+  `;
+
+  L.marker(e.latlng).addTo(map)
+    .bindPopup(popupMylocation).openPopup();
+    }
     
 
 // Add routing control
