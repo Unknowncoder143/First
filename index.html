@@ -282,8 +282,7 @@ map.on('click', function(e) {
     `;
 
     // Add the popup to the marker
-    marker.bindPopup(popupContent);
-});
+    marker.bindPopup(popupContent).openPopup();
     
     // Define the custom control
         L.Control.Reload = L.Control.extend({
