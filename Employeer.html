@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leaflet Map with Google Sheets Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 0; margin: 0; }
+    html, body, #map { height: 100%; width: 100vw; }
+    .leaflet-control-attribution { display: none; }
+    .leaflet-control-reload {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 6px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .leaflet-control-reload:hover { background-color: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+  <script>
+    // Initialize the map
+    const map = L.map('map', { attributionControl: false }).setView([17.4065, 78.4772], 10);
+
+    // Add a tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'rishi ralla'
+    }).addTo(map);
+
+    // Fetch data from Google Sheets and add markers
+    function fetchData(url, callback) {
+      fetch(url)
+        .then(response => response.text())
+        .then(text => {
+          const json = JSON.parse(text.substring(47).slice(0, -2));
+          callback(json.table.rows);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function addMarkers(rows) {
+      rows.forEach(row => {
+        const lat = parseFloat(row.c[3]?.v);
+        const lng = parseFloat(row.c[4]?.v);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const popupContent = `
+            <div class="popup-content">
+              <h4>${row.c[1]?.v || ''}</h4>
+              <p>${row.c[2]?.v || ''}</p>
+              ${row.c[5]?.v ? `<img src="${row.c[5].v}" alt="Image" style="width: 100px;">` : ''}
+              <p><strong>Timestamp:</strong> ${row.c[0]?.v || ''}</p>
+            </div>
+          `;
+          L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
+        }
+      });
+    }
+
+    // Fetch and add markers for first Google Sheets
+    fetchData('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7F_kfM1nfkc/gviz/tq?tqx=out:json', addMarkers);
+
+    // Fetch and add markers for second Google Sheets
+    fetchData('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYlsWaIX640YGQ/gviz/tq?tqx=out:json', rows => {
+      rows.forEach(row => {
+        const lat = parseFloat(row.c[2]?.v);
+        const lng = parseFloat(row.c[3]?.v);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const popupContent = `
+            <div class="popup-content">
+              <h4>${row.c[4]?.v}</h4>
+              <p>${row.c[5]?.v}</p>
+              <p><strong>Category:</strong> ${row.c[8]?.v}</p>
+              <p><strong>Date:</strong> ${new Date(row.c[0]?.v).toLocaleDateString()}</p>
+              <p><strong>Time:</strong> ${new Date(row.c[0]?.v).toLocaleTimeString()}</p>
+              ${row.c[9]?.v ? `<p><a href="${row.c[9].v}" target="_blank">More Info</a></p>` : ''}
+            </div>
+          `;
+          L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
+        }
+      });
+    });
+
+    // Add routing control
+    L.Routing.control({
+      waypoints: [
+        L.latLng(17.3850, 78.4867),
+        L.latLng(17.3850, 78.4867)
+      ],
+      routeWhileDragging: true,
+      geocoder: L.Control.Geocoder.nominatim()
+    }).addTo(map);
+
+    // Add custom "My Location" button
+    L.Control.myLocation = L.Control.extend({
+      options: { position: 'topright', title: 'Show My Location' },
+      onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.title = this.options.title;
+        container.style.backgroundColor = 'white';
+        container.style.width = '30px';
+        container.style.height = '30px';
+        container.style.lineHeight = '30px';
+        container.style.textAlign = 'center';
+        container.style.fontSize = '18px';
+        container.style.cursor = 'pointer';
+        container.innerHTML = '🔍';
+        container.onclick = () => map.locate({ setView: true, maxZoom: 16 });
+        return container;
+      }
+    });
+    L.control.myLocation().addTo(map);
+
+    // Add custom "Reload" control
+    L.Control.Reload = L.Control.extend({
+      options: { position: 'bottomleft' },
+      onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-control-reload');
+        controlDiv.innerHTML = 'Reload';
+        L.DomEvent.on(controlDiv, 'click', () => location.reload());
+        return controlDiv;
+      }
+    });
+    L.control.reload({ position: 'bottomleft' }).addTo(map);
+
+    // Handle location found event
+    function onLocationFound(e) {
+      var radius = e.accuracy;
+      const popupMylocation = `
+        <div class="popup-mylocation">
+          <form action="https://docs.google.com/forms/d/e/1FAIpQLSc-eI8W0yABluXJaxh1eOutqoq-IMPozUsf8LXCcfA4kCE3sg/formResponse" method="POST">
+            <input type="hidden" id="lat" name="entry.762797833" value="${e.latlng.lat}">
+            <input type="hidden" id="long" name="entry.1749073491" value="${e.latlng.lng}">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="entry.1822183594" placeholder="Enter Title" required>
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="entry.1462572732" placeholder="Enter Description" required></textarea>
+            <label for="category">Category</label>
+            <select class="form-control" id="category" name="entry.2123662913" required>
+              <option value="">Select Category</option>
+              <option value="Feeds">Feeds</option>
+              <option value="Explore">Explore</option>
+              <option value="Party">Party</option>
+              <option value="Show">Show</option>
+              <option value="Sports">Sports</option>
+              <option value="Sales">Sales</option>
+              <option value="Job">Job</option>
+              <option value="Parade">Parade</option>
+            </select>
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+          </form>
+          <p>You are within ${radius} meters from this point.</p>
+        </div>
+      `;
+
+      L.marker(e.latlng).addTo(map).bindPopup(popupMylocation).openPopup();
+    }
+
+    map.on('locationfound', onLocationFound);
+
+    function onLocationError(e) {
+      alert(e.message);
+    }
+
+    map.on('locationerror', onLocationError);
+
+    // Handle map click to add a draggable marker with form
+    var marker = null; // To keep track of the marker
+
+    map.on('click', function(e) {
+      if (marker) {
+        map.removeLayer(marker); // Remove existing marker if any
+      }
+
+      // Add a new marker at the clicked position
+      marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+
+      // Create content for the popup with a form and additional information
+      var popupContent = `
+        <strong>Pin Information</strong><br>
+        Latitude: ${e.latlng.lat.toFixed(6)}<br>
+        Longitude: ${e.latlng.lng.toFixed(6)}<br>
+        <form action="https://docs.google.com/forms/d/e/1FAIpQLSdRCftM-fC2LlKc2eothQD9MpO7J7fchCbFVQb216wBt4LMJQ/formResponse" method="POST" target="_blank">
+          <input type="hidden" name="entry.943411587" value="${e.latlng.lat.toFixed(6)}"> <!-- Hidden Latitude -->
+          <input type="hidden" name="entry.1837064675" value="${e.latlng.lng.toFixed(6)}"> <!-- Hidden Longitude -->
+          Title: <input type="text" name="entry.996619344" value="Hi" required><br> <!-- Pre-filled Title -->
+          Description: <input type="text" name="entry.1499117405" value="Hello" required><br> <!-- Pre-filled Description -->
+          Pin Categories:
+          <select name="entry.1839290075" required>
+            <option value="Happy">Happy</option>
+            <option value="Sad" selected>Sad</option>
+            <option value="Angry">Angry</option>
+            <option value="Stun">Stun</option>
+            <option value="Shock">Shock</option>
+            <option value="Like">Like</option>
+            <option value="Danger">Danger</option>
+            <option value="Normal">Normal</option>
+          </select><br> <!-- Pre-selected Category -->
+          <input type="submit" value="Submit">
+        </form>
+      `;
+
+      // Add the popup to the marker
+      marker.bindPopup(popupContent).openPopup();
+    });
+
+  </script>
+</body>
+</html>
