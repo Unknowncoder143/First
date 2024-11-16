@@ -1,314 +1,116 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Leaflet Map with Google Sheets Data</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-  <!-- Bootstrap CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      padding: 0;
-      margin: 0;
-    }
-    html, body, #map {
-      height: 100%;
-      width: 100vw;
-    }
-  .leaflet-control-attribution {
-    display: none;
-  }
-    .leaflet-control-reload {
-            background-color: #fff;
-            border: 1px solid #ddd;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .map-container {
+            height: 60vh;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .map-container p {
+            color: #888;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
+        }
+        .buttons a {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
             border-radius: 5px;
-            padding: 6px;
+        }
+        .buttons a:hover {
+            background-color: #0056b3;
+        }
+        footer {
             text-align: center;
-            cursor: pointer;
-        }
-        .leaflet-control-reload:hover {
+            padding: 10px;
             background-color: #f0f0f0;
+            color: #555;
         }
-</style>
+    </style>
 </head>
 <body>
-  <div id="map"></div>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
- 
-  <script>
-// Initialize the map
-const map = L.map('map', {
-  attributionControl: false // Disable the default attribution control
-}).setView([17.4065, 78.4772], 10); // Centered on Hyderabad
+    <header>
+        <h1>Job Platform</h1>
+        <nav>
+            <a href="#index">Home</a>
+            <a href="#job-post">Job Post</a>
+            <a href="#resume-post">Resume Post</a>
+            <a href="#candidates">Candidates</a>
+        </nav>
+    </header>
 
-    // Add a tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'rishi ralla'
-    }).addTo(map);
+    <section id="index" class="map-container">
+        <p>Interactive Map Goes Here (Employers & Candidates)</p>
+    </section>
 
-
-
-
-       // Fetch the JSON data from Google Sheets
-    fetch('https://docs.google.com/spreadsheets/d/1ajnO27PRxnHSQiRhyVpukeir-zqTcUfK7F_kfM1nfkc/gviz/tq?tqx=out:json')
-      .then(response => response.text())
-      .then(text => {
-        // Parse the JSON data
-        const json = JSON.parse(text.substring(47).slice(0, -2)); // Remove callback function and trailing })
-        const rows = json.table.rows;
-
-        // Loop through the rows and add markers
-        rows.forEach(row => {
-          const timestamp = row.c[0] ? row.c[0].v : ''; // Timestamp
-          const title = row.c[1] ? row.c[1].v : ''; // Title
-          const description = row.c[2] ? row.c[2].v : ''; // Description
-          const lat = parseFloat(row.c[3].v); // Latitude
-          const lng = parseFloat(row.c[4].v); // Longitude
-          const imageUrl = row.c[5] ? row.c[5].v : ''; // Image URL
-
-          if (!isNaN(lat) && !isNaN(lng)) {
-            const popupContent = `
-              <div class="popup-content">
-                <h4>${title}</h4>
-                <p>${description}</p>
-                ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100px;">` : ''}
-                <p><strong>Timestamp:</strong> ${timestamp}</p>
-              </div>
-            `;
-            L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
-          }
-        });
-      })
-      .catch(error => console.error('Error fetching data:', error));
-
-
-    // Fetch the JSON data from Google Sheets adding status mark 
-fetch('https://docs.google.com/spreadsheets/d/15lS6FEOSuQT2ykKbUaEUjjEi9eKeqJYlsWaIX640YGQ/gviz/tq?tqx=out:json')
-  .then(response => response.text())
-  .then(text => {
-    try {
-      const json = JSON.parse(text.substring(47).slice(0, -2));
-      const rows = json.table.rows;
-
-      rows.forEach(row => {
-        const lat = parseFloat(row.c[2]?.v);
-        const lng = parseFloat(row.c[3]?.v);
-
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const popupContent = `
-            <div class="popup-content">
-              <h4>${row.c[4]?.v}</h4>
-              <p>${row.c[5]?.v}</p>
-              <p><strong>Category:</strong> ${row.c[8]?.v}</p>
-              <p><strong>Date:</strong> ${new Date(row.c[0]?.v).toLocaleDateString()}</p>
-              <p><strong>Time:</strong> ${new Date(row.c[0]?.v).toLocaleTimeString()}</p>
-              ${row.c[9]?.v ? `<p><a href="${row.c[9].v}" target="_blank">More Info</a></p>` : ''}
-            </div>
-          `;
-          L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
-        }
-      });
-    } catch (error) {
-      console.error('Error parsing JSON:', error);
-    }
-  })
-  .catch(error => {
-    console.error('Error fetching data:', error);
-  });
-      
-    // Adding search geocoding
-    var geocoder = L.Control.geocoder().addTo(map);
-
-    // Adding current location
-    map.locate({ setview: false , watch: false, maxview: 16});
-
-    // functions on my current location 
-    
-    function onLocationFound(e) {
-  var radius = e.accuracy;
-  
-  const popupMylocation = `
-    <div class="popup-mylocation">
-      <div>
-        <form action="https://docs.google.com/forms/d/e/1FAIpQLSc-eI8W0yABluXJaxh1eOutqoq-IMPozUsf8LXCcfA4kCE3sg/formResponse" method="POST">
-          <!-- Hidden fields for latitude and longitude -->
-          <input type="hidden" id="lat" name="entry.762797833" value="${e.latlng.lat}">
-          <input type="hidden" id="long" name="entry.1749073491" value="${e.latlng.lng}">
-
-          <div>
-            <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="entry.1822183594" placeholder="Enter Title" required>
-          </div>
-          <div>
-            <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="entry.1462572732" placeholder="Enter Description" required></textarea>
-          </div>
-          <div>
-            <label for="category">Category</label>
-            <select class="form-control" id="category" name="entry.2123662913" required>
-              <option value="">Select Category</option>
-              <option value="Feeds">Feeds</option>
-              <option value="Explore">Explore</option>
-              <option value="Party">Party</option>
-              <option value="Show">Show</option>
-              <option value="Sports">Sports</option>
-              <option value="Sales">Sales</option>
-              <option value="Job">Job</option>
-              <option value="Parade">Parade</option>
-            </select>
-          </div>
-          
-
-          <button type="submit" class="btn btn-primary mt-3">Submit</button>
-        </form>
-      </div>
-      <div>
-        <p>You are within ${radius} meters from this point.</p>
-      </div>
+    <div class="buttons">
+        <a href="#job-post">Post a Job</a>
+        <a href="#resume-post">Post a Resume</a>
     </div>
-  `;
 
-  L.marker(e.latlng).addTo(map)
-    .bindPopup(popupMylocation).openPopup();
-}
-
-map.on('locationfound', onLocationFound);
-
-function onLocationError(e) {
-  alert(e.message);
-}
-
-map.on('locationerror', onLocationError);
-// Add routing control
-var routingControl = L.Routing.control({
-    waypoints: [
-      L.latLng(17.3850, 78.4867) ,
-            L.latLng(17.3850, 78.4867) // Destination example (Hyderabad) 
-        ],
-    routeWhileDragging: true,
-    geocoder: L.Control.Geocoder.nominatim(),
-    geocoder: L.Control.Geocoder.nominatim()
-}).addTo(map);
-
-// Add custom markers for start and finish with draggable option
-    
-        // Add "My Location" button
-    L.Control.myLocation = L.Control.extend({
-      options: {
-        position: 'topright',
-        title: 'Show My Location'
-      },
-      onAdd: function (map) {
-        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        container.title = this.options.title;
-        container.style.backgroundColor = 'white';
-        container.style.width = '30px';
-        container.style.height = '30px';
-        container.style.lineHeight = '30px';
-        container.style.textAlign = 'center';
-        container.style.fontSize = '18px';
-        container.style.cursor = 'pointer';
-        container.innerHTML = '🔍'; // Icon for the button
-
-        container.onclick = function () {
-          map.locate({setView: true, maxZoom: 16});
-        };
-
-        return container;
-      }
-    });
-
-    L.control.myLocation = function (opts) {
-      return new L.Control.myLocation(opts);
-    };
-
-    L.control.myLocation().addTo(map);
-    
-    //creating a mark or pin to map 
-    
-    var marker = null; // To keep track of the marker
-
-// Add click event to the map
-map.on('click', function(e) {
-    if (marker) {
-        map.removeLayer(marker); // Remove existing marker if any
-    }
-
-// Add a new marker at the clicked position
-    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
-
-    // Add a popup to the marker with latitude, longitude, and an iframe
-      
-
-  var marker = null; // To keep track of the marker
-
-// Add click event to the map
-map.on('click', function(e) {
-    if (marker) {
-        map.removeLayer(marker); // Remove existing marker if any
-    }
-
-    // Add a new marker at the clicked position
-    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
-
-    // Create content for the popup with a form and additional information
-    var popupContent = `
-        <strong>Pin Information</strong><br>
-        Latitude: ${e.latlng.lat.toFixed(6)}<br>
-        Longitude: ${e.latlng.lng.toFixed(6)}<br>
-        <form action="https://docs.google.com/forms/d/e/1FAIpQLSdRCftM-fC2LlKc2eothQD9MpO7J7fchCbFVQb216wBt4LMJQ/formResponse" method="POST" target="_blank">
-            <input type="hidden" name="entry.943411587" value="${e.latlng.lat.toFixed(6)}"> <!-- Hidden Latitude -->
-            <input type="hidden" name="entry.1837064675" value="${e.latlng.lng.toFixed(6)}"> <!-- Hidden Longitude -->
-            Title: <input type="text" name="entry.996619344" value="Hi" required><br> <!-- Pre-filled Title -->
-            Description: <input type="text" name="entry.1499117405" value="Hello" required><br> <!-- Pre-filled Description -->
-            Pin Categories:
-            <select name="entry.1839290075" required>
-                <option value="Happy">Happy</option>
-                <option value="Sad" selected>Sad</option>
-                <option value="Angry">Angry</option>
-                <option value="Stun">Stun</option>
-                <option value="Shock">Shock</option>
-                <option value="Like">Like</option>
-                <option value="Danger">Danger</option>
-                <option value="Normal">Normal</option>
-            </select><br> <!-- Pre-selected Category -->
-            <input type="submit" value="Submit">
+    <section id="job-post">
+        <h2>Job Post Form</h2>
+        <form>
+            <label for="job-title">Job Title:</label>
+            <input type="text" id="job-title" name="job-title" required><br><br>
+            <label for="job-location">Location:</label>
+            <input type="text" id="job-location" name="job-location" required><br><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" rows="4" cols="50"></textarea><br><br>
+            <button type="submit">Submit</button>
         </form>
-    `;
+    </section>
 
-    // Add the popup to the marker
-    marker.bindPopup(popupContent).openPopup();
-}
-    
-    // Define the custom control
-        L.Control.Reload = L.Control.extend({
-            options: {
-                position: 'bottomleft'
-            },
+    <section id="resume-post">
+        <h2>Resume Post Form</h2>
+        <form>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+            <label for="skills">Skills:</label>
+            <input type="text" id="skills" name="skills" required><br><br>
+            <label for="resume">Upload Resume:</label>
+            <input type="file" id="resume" name="resume" required><br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </section>
 
-            onAdd: function (map) {
-                var controlDiv = L.DomUtil.create('div', 'leaflet-control-reload');
-                controlDiv.innerHTML = 'Reload ';
+    <section id="candidates">
+        <h2>Candidates List</h2>
+        <p>Candidate profiles displayed here.</p>
+    </section>
 
-                L.DomEvent.on(controlDiv, 'click', function () {
-                    location.reload();
-                });
-
-                return controlDiv;
-            }
-        });
-
-        // Add the custom control to the map
-        L.control.reload = function (opts) {
-            return new L.Control.Reload(opts);
-        };
-        L.control.reload({ position: 'bottomleft' }).addTo(map);
-    
-      </script>
+    <footer>
+        <p>&copy; 2024 Job Platform. All Rights Reserved.</p>
+    </footer>
 </body>
 </html>
