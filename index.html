@@ -195,22 +195,7 @@ var routingControl = L.Routing.control({
     
     var marker = null; // To keep track of the marker
 
-// Add click event to the map
-map.on('click', function(e) {
-    if (marker) {
-        map.removeLayer(marker); // Remove existing marker if any
-    }
 
-// Add a new marker at the clicked position
-    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
-
-    // Add a popup to the marker with latitude, longitude, and an iframe
-      marker.bindPopup(
-        'Latitude: ' + e.latlng.lat.toFixed(6) + '<br>Longitude: ' + e.latlng.lng.toFixed(6) +
-        '<br><iframe class="popup-iframe" src="https://forms.gle/rsgXYM3dekAwTVCX6" frameborder="0" width="300" height="200"></iframe>'
-      );
-    });
-    
     // Define the custom control
         L.Control.Reload = L.Control.extend({
             options: {
