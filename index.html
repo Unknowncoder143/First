@@ -107,6 +107,8 @@ const map = L.map('map', {
           const lat = parseFloat(row.c[3].v); // Latitude
           const lng = parseFloat(row.c[4].v); // Longitude
           const imageUrl = row.c[5] ? row.c[5].v : ''; // Image URL
+          const workcharges = row.c[6] ? row.c[6].v : ''; // work charges
+          const callme = row.c[7] ? row.c[7].v : ''; // call
 
           if (!isNaN(lat) && !isNaN(lng)) {
             const popupContent = `
